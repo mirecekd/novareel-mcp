@@ -119,11 +119,17 @@ S3_BUCKET=my-video-generation-bucket
 ### Spuštění pomocí uvx (doporučeno)
 
 ```bash
-# Z místního wheel souboru (po build)
+# Nejdříve build balíčku
+./build.sh
+
+# Pak spuštění z wheel souboru
 uvx --from ./dist/novareel_mcp-1.0.0-py3-none-any.whl novareel-mcp-server --aws-access-key-id YOUR_KEY --aws-secret-access-key YOUR_SECRET --s3-bucket YOUR_BUCKET
 
-# Nebo z aktuálního adresáře během vývoje
+# Nebo z aktuálního adresáře během vývoje (bez build)
 uvx --from . novareel-mcp-server --aws-access-key-id YOUR_KEY --aws-secret-access-key YOUR_SECRET --s3-bucket YOUR_BUCKET
+
+# Nebo pomocí start scriptu
+./start.sh build-package  # Build wheel
 ```
 
 ### Stdio Version (Direct MCP Client)

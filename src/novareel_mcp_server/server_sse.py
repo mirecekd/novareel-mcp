@@ -67,8 +67,9 @@ def initialize_aws_client():
             aws_secret_access_key=aws_secret_access_key
         )
         
-        # Test the connection
-        bedrock_client.list_foundation_models()
+        # Test the connection with a simple operation
+        # Note: bedrock-runtime doesn't have list_foundation_models, that's in bedrock client
+        # We'll just create the client and let the first actual call test the connection
         
     except NoCredentialsError:
         raise AWSConfigError("Invalid AWS credentials provided")

@@ -83,26 +83,32 @@ case $MODE in
         echo "🔨 Building SSE Docker image..."
         ./build-sse.sh
         ;;
+    build-package)
+        echo "🔨 Building Python package..."
+        ./build.sh
+        ;;
     *)
         echo "❌ Invalid mode: $MODE"
         echo ""
         echo "Usage: $0 [mode]"
         echo ""
         echo "Available modes:"
-        echo "  stdio        - Run STDIO version locally (default)"
-        echo "  sse          - Run SSE version locally"
-        echo "  docker-stdio - Run STDIO version in Docker"
-        echo "  docker-sse   - Run SSE version in Docker"
-        echo "  docker-both  - Run both versions in Docker"
-        echo "  build        - Build all Docker images"
-        echo "  build-stdio  - Build STDIO Docker image"
-        echo "  build-sse    - Build SSE Docker image"
+        echo "  stdio         - Run STDIO version locally (default)"
+        echo "  sse           - Run SSE version locally"
+        echo "  docker-stdio  - Run STDIO version in Docker"
+        echo "  docker-sse    - Run SSE version in Docker"
+        echo "  docker-both   - Run both versions in Docker"
+        echo "  build         - Build all Docker images"
+        echo "  build-stdio   - Build STDIO Docker image"
+        echo "  build-sse     - Build SSE Docker image"
+        echo "  build-package - Build Python package (wheel)"
         echo ""
         echo "Examples:"
-        echo "  $0                # Run STDIO version locally"
-        echo "  $0 sse           # Run SSE version locally"
-        echo "  $0 build        # Build all Docker images"
-        echo "  $0 docker-both   # Run both versions in Docker"
+        echo "  $0                 # Run STDIO version locally"
+        echo "  $0 sse            # Run SSE version locally"
+        echo "  $0 build-package  # Build Python wheel for uvx"
+        echo "  $0 build          # Build all Docker images"
+        echo "  $0 docker-both    # Run both versions in Docker"
         exit 1
         ;;
 esac
