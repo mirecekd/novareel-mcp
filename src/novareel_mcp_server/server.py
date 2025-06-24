@@ -33,8 +33,30 @@ bedrock_client = None
 MODEL_ID = "amazon.nova-reel-v1:1"
 SLEEP_SECONDS = 5  # Interval for checking video generation progress
 
-# In-memory storage for tracking invocations (in production, use persistent storage)
+# Persistent storage for tracking invocations
+INVOCATIONS_FILE = os.path.expanduser("~/.novareel_invocations.json")
 active_invocations = {}
+
+
+def load_invocations():
+    """Load invocations from persistent storage"""
+    global active_invocations
+    try:
+        if os.path.exists(INVOCATIONS_FILE):
+            with open(INVOCATIONS_FILE, 'r') as f:
+                active_invocations = json.load(f)
+    except Exception as e:
+        print(f"Warning: Could not load invocations file: {e}", file=sys.stderr)
+        active_invocations = {}
+
+
+def save_invocations():
+    """Save invocations to persistent storage"""
+    try:
+        with open(INVOCATIONS_FILE, 'w') as f:
+            json.dump(active_invocations, f, indent=2)
+    except Exception as e:
+        print(f"Warning: Could not save invocations file: {e}", file=sys.stderr)
 
 
 class NovaReelError(Exception):
@@ -157,6 +179,7 @@ async def start_async_invoke(
         }
         
         active_invocations[job_id] = invocation_data
+        save_invocations()  # Save to persistent storage
         
         return {
             "success": True,
@@ -398,10 +421,14 @@ def main():
     if s3_bucket.startswith("s3://"):
         s3_bucket = s3_bucket[5:]
     
+    # Load existing invocations
+    load_invocations()
+    
     # Initialize AWS client
     try:
         initialize_aws_client()
         print(f"Nova Reel MCP Server initialized with region: {aws_region}, bucket: {s3_bucket}", file=sys.stderr)
+        print(f"Loaded {len(active_invocations)} existing invocations", file=sys.stderr)
     except AWSConfigError as e:
         print(f"AWS configuration error: {e}", file=sys.stderr)
         sys.exit(1)

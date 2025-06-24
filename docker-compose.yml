@@ -12,6 +12,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - S3_BUCKET=${S3_BUCKET}
+    volumes:
+      - novareel-data:/root
     stdin_open: true
     tty: true
     restart: unless-stopped
@@ -29,6 +31,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - S3_BUCKET=${S3_BUCKET}
+    volumes:
+      - novareel-data:/root
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -62,6 +66,10 @@ services:
       - novareel-network
     profiles:
       - dev
+
+volumes:
+  novareel-data:
+    driver: local
 
 networks:
   novareel-network:
