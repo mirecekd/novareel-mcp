@@ -141,14 +141,21 @@ Add to your Cline MCP settings:
 {
   "mcpServers": {
     "Nova Reel Video MCP": {
+      "disabled": false,
+      "timeout": 60,
+      "type": "stdio",
       "command": "docker",
       "args": [
-        "run", "--rm", "-i",
-        "--env", "AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID",
-        "--env", "AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY", 
-        "--env", "AWS_REGION=us-east-1",
-        "--env", "S3_BUCKET=YOUR_S3_BUCKET_NAME",
-        "ghcr.io/mirecekd/novareel-mcp:latest-stdio"
+        "run",
+        "-i",
+        "--rm",
+        "ghcr.io/mirecekd/novareel-mcp:latest-stdio",
+        "--aws-access-key-id",
+        "YOUR_AWS_ACCESS_KEY_ID",
+        "--aws-secret-access-key",
+        "YOUR_AWS_SECRET_ACCESS_KEY",
+        "--s3-bucket",
+        "YOUR_S3_BUCKET_NAME"
       ]
     }
   }
@@ -164,12 +171,16 @@ Add to your Claude Desktop `claude_desktop_config.json`:
     "novareel-mcp": {
       "command": "docker",
       "args": [
-        "run", "--rm", "-i",
-        "--env", "AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID",
-        "--env", "AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY",
-        "--env", "AWS_REGION=us-east-1", 
-        "--env", "S3_BUCKET=YOUR_S3_BUCKET_NAME",
-        "ghcr.io/mirecekd/novareel-mcp:latest-stdio"
+        "run",
+        "-i", 
+        "--rm",
+        "ghcr.io/mirecekd/novareel-mcp:latest-stdio",
+        "--aws-access-key-id",
+        "YOUR_AWS_ACCESS_KEY_ID",
+        "--aws-secret-access-key",
+        "YOUR_AWS_SECRET_ACCESS_KEY",
+        "--s3-bucket",
+        "YOUR_S3_BUCKET_NAME"
       ]
     }
   }
