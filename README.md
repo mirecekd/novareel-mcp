@@ -130,6 +130,74 @@ S3_BUCKET=my-video-generation-bucket
 
 ## Usage
 
+### MCP Client Integration (Cline/Claude Desktop)
+
+Add the server to your MCP client configuration:
+
+#### Cline Configuration
+Add to your Cline MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "Nova Reel Video MCP": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "--env", "AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID",
+        "--env", "AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY", 
+        "--env", "AWS_REGION=us-east-1",
+        "--env", "S3_BUCKET=YOUR_S3_BUCKET_NAME",
+        "ghcr.io/mirecekd/novareel-mcp:latest-stdio"
+      ]
+    }
+  }
+}
+```
+
+#### Claude Desktop Configuration
+Add to your Claude Desktop `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "novareel-mcp": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "--env", "AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID",
+        "--env", "AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY",
+        "--env", "AWS_REGION=us-east-1", 
+        "--env", "S3_BUCKET=YOUR_S3_BUCKET_NAME",
+        "ghcr.io/mirecekd/novareel-mcp:latest-stdio"
+      ]
+    }
+  }
+}
+```
+
+#### Alternative: Local Python Installation
+If you prefer running without Docker:
+
+```json
+{
+  "mcpServers": {
+    "novareel-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from", "git+https://github.com/mirecekd/novareel-mcp.git",
+        "novareel-mcp-server",
+        "--aws-access-key-id", "YOUR_AWS_ACCESS_KEY_ID",
+        "--aws-secret-access-key", "YOUR_AWS_SECRET_ACCESS_KEY",
+        "--s3-bucket", "YOUR_S3_BUCKET_NAME"
+      ]
+    }
+  }
+}
+```
+
+**Important**: Replace the placeholder values with your actual AWS credentials and S3 bucket name.
+
 ### Running with uvx (Recommended)
 
 ```bash
