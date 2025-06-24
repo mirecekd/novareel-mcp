@@ -69,6 +69,20 @@ pip install -e .
 
 ### Docker Installation
 
+#### Using Pre-built Images (Recommended)
+
+Pull multi-architecture images from GitHub Container Registry:
+
+```bash
+# STDIO version
+docker pull ghcr.io/mirecekd/novareel-mcp:latest-stdio
+
+# SSE version  
+docker pull ghcr.io/mirecekd/novareel-mcp:latest-sse
+```
+
+#### Building Locally
+
 1. Build containers using provided scripts:
 ```bash
 # Build all versions
