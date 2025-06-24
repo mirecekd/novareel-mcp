@@ -116,19 +116,19 @@ S3_BUCKET=my-video-generation-bucket
 
 ## Usage
 
-### Spuštění pomocí uvx (doporučeno)
+### Running with uvx (Recommended)
 
 ```bash
-# Nejdříve build balíčku
+# First build the package
 ./build.sh
 
-# Pak spuštění z wheel souboru
+# Then run from wheel file
 uvx --from ./dist/novareel_mcp-1.0.0-py3-none-any.whl novareel-mcp-server --aws-access-key-id YOUR_KEY --aws-secret-access-key YOUR_SECRET --s3-bucket YOUR_BUCKET
 
-# Nebo z aktuálního adresáře během vývoje (bez build)
+# Or from current directory during development (without build)
 uvx --from . novareel-mcp-server --aws-access-key-id YOUR_KEY --aws-secret-access-key YOUR_SECRET --s3-bucket YOUR_BUCKET
 
-# Nebo pomocí start scriptu
+# Or using start script
 ./start.sh build-package  # Build wheel
 ```
 
@@ -154,18 +154,18 @@ docker run -p 8000:8000 -e AWS_ACCESS_KEY_ID=YOUR_KEY -e AWS_SECRET_ACCESS_KEY=Y
 
 Then access `http://localhost:8000` for the web interface.
 
-### Build balíčku
+### Package Build
 
-Pro vytvoření distribučního balíčku:
+To create a distribution package:
 
 ```bash
-# Instalace build nástrojů
+# Install build tools
 pip install build
 
-# Vytvoření balíčku
+# Create package
 python3 -m build
 
-# Výsledné soubory najdeš v dist/
+# Output files will be in dist/
 ```
 
 ## Example Usage
@@ -306,8 +306,6 @@ https://your-bucket.s3.region.amazonaws.com/job-id/output.mp4
 - **Frame Rate**: 24 fps (recommended)
 - **Dimensions**: 
   - 1280x720 (HD)
-  - 1920x1080 (Full HD)
-  - 1024x1024 (Square)
 - **Format**: MP4
 - **Model**: amazon.nova-reel-v1:1
 
