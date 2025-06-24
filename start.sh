@@ -54,6 +54,13 @@ case $MODE in
         echo ""
         python -m novareel_mcp_server.server_sse --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET" --host 0.0.0.0 --port 8000
         ;;
+    http)
+        echo "🚀 Starting Nova Reel MCP Server (HTTP Streaming mode)..."
+        echo "   This mode provides HTTP streaming transport."
+        echo "   Access: http://localhost:8001"
+        echo ""
+        python -m novareel_mcp_server.server_http --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET" --host 0.0.0.0 --port 8001
+        ;;
     docker-stdio)
         echo "🐳 Starting Nova Reel MCP Server (Docker STDIO)..."
         docker-compose up novareel-stdio
@@ -63,10 +70,24 @@ case $MODE in
         echo "   Access: http://localhost:8000"
         docker-compose up novareel-sse
         ;;
-    docker-both)
-        echo "🐳 Starting both Nova Reel MCP Servers (Docker)..."
+    docker-http)
+        echo "🐳 Starting Nova Reel MCP Server (Docker HTTP Streaming)..."
+        echo "   Access: http://localhost:8001"
+        docker-compose up novareel-http
+        ;;
+    docker-all)
+        echo "🐳 Starting all Nova Reel MCP Servers (Docker)..."
         echo "   SSE Access: http://localhost:8000"
+        echo "   HTTP Access: http://localhost:8001"
         docker-compose up -d
+        echo "✅ All servers started in background"
+        echo "   Use 'docker-compose logs -f' to view logs"
+        echo "   Use 'docker-compose down' to stop"
+        ;;
+    docker-both)
+        echo "🐳 Starting both Nova Reel MCP Servers (Docker - legacy)..."
+        echo "   SSE Access: http://localhost:8000"
+        docker-compose up -d novareel-stdio novareel-sse
         echo "✅ Both servers started in background"
         echo "   Use 'docker-compose logs -f' to view logs"
         echo "   Use 'docker-compose down' to stop"
@@ -83,6 +104,10 @@ case $MODE in
         echo "🔨 Building SSE Docker image..."
         ./build-sse.sh
         ;;
+    build-http)
+        echo "🔨 Building HTTP Streaming Docker image..."
+        ./build-http.sh
+        ;;
     build-package)
         echo "🔨 Building Python package..."
         ./build.sh
@@ -95,20 +120,25 @@ case $MODE in
         echo "Available modes:"
         echo "  stdio         - Run STDIO version locally (default)"
         echo "  sse           - Run SSE version locally"
+        echo "  http          - Run HTTP Streaming version locally"
         echo "  docker-stdio  - Run STDIO version in Docker"
         echo "  docker-sse    - Run SSE version in Docker"
-        echo "  docker-both   - Run both versions in Docker"
+        echo "  docker-http   - Run HTTP Streaming version in Docker"
+        echo "  docker-both   - Run STDIO + SSE versions in Docker (legacy)"
+        echo "  docker-all    - Run all three versions in Docker"
         echo "  build         - Build all Docker images"
         echo "  build-stdio   - Build STDIO Docker image"
         echo "  build-sse     - Build SSE Docker image"
+        echo "  build-http    - Build HTTP Streaming Docker image"
         echo "  build-package - Build Python package (wheel)"
         echo ""
         echo "Examples:"
         echo "  $0                 # Run STDIO version locally"
         echo "  $0 sse            # Run SSE version locally"
+        echo "  $0 http           # Run HTTP Streaming version locally"
         echo "  $0 build-package  # Build Python wheel for uvx"
         echo "  $0 build          # Build all Docker images"
-        echo "  $0 docker-both    # Run both versions in Docker"
+        echo "  $0 docker-all     # Run all three versions in Docker"
         exit 1
         ;;
 esac

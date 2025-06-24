@@ -12,9 +12,9 @@ A Model Context Protocol (MCP) server for Amazon Nova Reel 1.1 video generation 
 ## Features
 
 - **Asynchronous Video Generation**: Start, monitor, and retrieve video generation jobs
-- **Multiple Transport Methods**: Support for both stdio and Server-Sent Events (SSE)
+- **Multiple Transport Methods**: Support for stdio, Server-Sent Events (SSE), and HTTP Streaming
 - **Comprehensive Prompting Guide**: Built-in guidelines based on AWS documentation
-- **Docker Support**: Ready-to-use Docker containers for both transport methods
+- **Docker Support**: Ready-to-use Docker containers for all transport methods
 - **AWS Integration**: Full integration with AWS Bedrock and S3
 
 ## Available Tools
@@ -79,6 +79,9 @@ docker pull ghcr.io/mirecekd/novareel-mcp:latest-stdio
 
 # SSE version  
 docker pull ghcr.io/mirecekd/novareel-mcp:latest-sse
+
+# HTTP Streaming version
+docker pull ghcr.io/mirecekd/novareel-mcp:latest-http
 ```
 
 #### Building Locally
@@ -91,6 +94,7 @@ docker pull ghcr.io/mirecekd/novareel-mcp:latest-sse
 # Or build individual versions
 ./build-stdio.sh    # STDIO version
 ./build-sse.sh      # SSE version
+./build-http.sh     # HTTP Streaming version
 ```
 
 2. Or use docker-compose:
@@ -106,6 +110,7 @@ docker-compose up -d
 # Build specific version
 ./start.sh build-stdio
 ./start.sh build-sse
+./start.sh build-http
 ```
 
 ## Configuration
@@ -246,6 +251,18 @@ docker run -p 8000:8000 -e AWS_ACCESS_KEY_ID=YOUR_KEY -e AWS_SECRET_ACCESS_KEY=Y
 ```
 
 Then access `http://localhost:8000` for the web interface.
+
+### HTTP Streaming Version (Bidirectional Transport)
+
+```bash
+# Local execution
+python -m novareel_mcp_server.server_http --aws-access-key-id YOUR_KEY --aws-secret-access-key YOUR_SECRET --s3-bucket YOUR_BUCKET --host 0.0.0.0 --port 8001
+
+# Docker execution
+docker run -p 8001:8001 -e AWS_ACCESS_KEY_ID=YOUR_KEY -e AWS_SECRET_ACCESS_KEY=YOUR_SECRET -e S3_BUCKET=YOUR_BUCKET ghcr.io/mirecekd/novareel-mcp:latest-http
+```
+
+Then access `http://localhost:8001` for the HTTP streaming transport.
 
 ### Package Build
 
@@ -441,10 +458,12 @@ export PYTHONUNBUFFERED=1
 novareel-mcp-server/
 ├── main.py              # Main MCP server (stdio)
 ├── main_sse.py          # SSE version of MCP server
+├── main_http.py         # HTTP Streaming version of MCP server
 ├── prompting_guide.py   # AWS prompting guidelines
 ├── pyproject.toml       # Python dependencies
 ├── Dockerfile.stdio     # Docker for stdio version
 ├── Dockerfile.sse       # Docker for SSE version
+├── Dockerfile.http      # Docker for HTTP streaming version
 ├── docker-compose.yml   # Container orchestration
 └── README.md           # This documentation
 ```
@@ -454,7 +473,7 @@ novareel-mcp-server/
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test with both stdio and SSE versions
+4. Test with all transport versions (stdio, SSE, HTTP streaming)
 5. Submit a pull request
 
 ## License
