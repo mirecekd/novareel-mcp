@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  novareel-stdio:
+    build:
+      context: .
+      dockerfile: Dockerfile.stdio
+    image: mirecekd/novareel-mcp-server:stdio
+    container_name: novareel-mcp-stdio
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET}
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - novareel-network
+
+  novareel-sse:
+    build:
+      context: .
+      dockerfile: Dockerfile.sse
+    image: mirecekd/novareel-mcp-server:sse
+    container_name: novareel-mcp-sse
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - novareel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development version with live reloading
+  novareel-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.sse
+    image: mirecekd/novareel-mcp-server:dev
+    container_name: novareel-mcp-dev
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    networks:
+      - novareel-network
+    profiles:
+      - dev
+
+networks:
+  novareel-network:
+    driver: bridge
+
+# Example usage:
+# 1. Create .env file with your AWS credentials:
+#    AWS_ACCESS_KEY_ID=your_access_key
+#    AWS_SECRET_ACCESS_KEY=your_secret_key
+#    AWS_REGION=us-east-1
+#    S3_BUCKET=your-bucket-name
+#
+# 2. Start both services:
+#    docker-compose up -d
+#
+# 3. Use stdio version:
+#    docker exec -it novareel-mcp-stdio python main.py
+#
+# 4. Use SSE version:
+#    Access http://localhost:8000 for web interface
+#
+# 5. Development with live reloading:
+#    docker-compose --profile dev up novareel-dev
+#
+# 6. Stop services:
+#    docker-compose down

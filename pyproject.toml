@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "novareel-mcp"
+version = "1.0.0"
+description = "MCP Server pro Amazon Nova Reel 1.1 video generation"
+authors = [
+    {name = "Miroslav Dvořák", email = "mirecekd@gmail.com"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+dependencies = [
+    "fastmcp>=0.2.0",
+    "boto3>=1.35.0",
+    "botocore>=1.35.0",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+novareel-mcp-server = "novareel_mcp_server.server:main"
+
+[project.urls]
+Homepage = "https://github.com/mirecekd/novareel-mcp"
+Repository = "https://github.com/mirecekd/novareel-mcp"
+Issues = "https://github.com/mirecekd/novareel-mcp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/novareel_mcp_server"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+    "/LICENSE",
+]

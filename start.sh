@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# Nova Reel MCP Server Quick Start Script
+
+set -e
+
+echo "🎬 Amazon Nova Reel MCP Server Quick Start"
+echo "=========================================="
+
+# Check if .env file exists
+if [ ! -f .env ]; then
+    echo "⚠️  No .env file found!"
+    echo "Please copy .env.example to .env and configure your AWS credentials:"
+    echo ""
+    echo "  cp .env.example .env"
+    echo "  # Edit .env with your AWS credentials"
+    echo ""
+    exit 1
+fi
+
+# Source environment variables
+echo "📋 Loading environment variables..."
+export $(cat .env | grep -v '^#' | xargs)
+
+# Check required variables
+if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$S3_BUCKET" ]; then
+    echo "❌ Missing required environment variables!"
+    echo "Please ensure .env contains:"
+    echo "  - AWS_ACCESS_KEY_ID"
+    echo "  - AWS_SECRET_ACCESS_KEY"
+    echo "  - S3_BUCKET"
+    exit 1
+fi
+
+echo "✅ Environment configured:"
+echo "   AWS Region: ${AWS_REGION:-us-east-1}"
+echo "   S3 Bucket: $S3_BUCKET"
+echo ""
+
+# Check if we should run stdio or sse version
+MODE=${1:-stdio}
+
+case $MODE in
+    stdio)
+        echo "🚀 Starting Nova Reel MCP Server (STDIO mode)..."
+        echo "   This mode is for direct MCP client connections."
+        echo ""
+        python main.py --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET"
+        ;;
+    sse)
+        echo "🚀 Starting Nova Reel MCP Server (SSE mode)..."
+        echo "   This mode provides a web interface."
+        echo "   Access: http://localhost:8000"
+        echo ""
+        python -m novareel_mcp_server.server_sse --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET" --host 0.0.0.0 --port 8000
+        ;;
+    docker-stdio)
+        echo "🐳 Starting Nova Reel MCP Server (Docker STDIO)..."
+        docker-compose up novareel-stdio
+        ;;
+    docker-sse)
+        echo "🐳 Starting Nova Reel MCP Server (Docker SSE)..."
+        echo "   Access: http://localhost:8000"
+        docker-compose up novareel-sse
+        ;;
+    docker-both)
+        echo "🐳 Starting both Nova Reel MCP Servers (Docker)..."
+        echo "   SSE Access: http://localhost:8000"
+        docker-compose up -d
+        echo "✅ Both servers started in background"
+        echo "   Use 'docker-compose logs -f' to view logs"
+        echo "   Use 'docker-compose down' to stop"
+        ;;
+    build)
+        echo "🔨 Building all Docker images..."
+        ./build-all.sh
+        ;;
+    build-stdio)
+        echo "🔨 Building STDIO Docker image..."
+        ./build-stdio.sh
+        ;;
+    build-sse)
+        echo "🔨 Building SSE Docker image..."
+        ./build-sse.sh
+        ;;
+    *)
+        echo "❌ Invalid mode: $MODE"
+        echo ""
+        echo "Usage: $0 [mode]"
+        echo ""
+        echo "Available modes:"
+        echo "  stdio        - Run STDIO version locally (default)"
+        echo "  sse          - Run SSE version locally"
+        echo "  docker-stdio - Run STDIO version in Docker"
+        echo "  docker-sse   - Run SSE version in Docker"
+        echo "  docker-both  - Run both versions in Docker"
+        echo "  build        - Build all Docker images"
+        echo "  build-stdio  - Build STDIO Docker image"
+        echo "  build-sse    - Build SSE Docker image"
+        echo ""
+        echo "Examples:"
+        echo "  $0                # Run STDIO version locally"
+        echo "  $0 sse           # Run SSE version locally"
+        echo "  $0 build        # Build all Docker images"
+        echo "  $0 docker-both   # Run both versions in Docker"
+        exit 1
+        ;;
+esac
