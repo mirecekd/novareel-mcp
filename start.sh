@@ -23,12 +23,26 @@ echo "📋 Loading environment variables..."
 export $(cat .env | grep -v '^#' | xargs)
 
 # Check required variables
-if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$S3_BUCKET" ]; then
-    echo "❌ Missing required environment variables!"
-    echo "Please ensure .env contains:"
-    echo "  - AWS_ACCESS_KEY_ID"
-    echo "  - AWS_SECRET_ACCESS_KEY"
-    echo "  - S3_BUCKET"
+if [ -z "$S3_BUCKET" ]; then
+    echo "❌ Missing required S3_BUCKET environment variable!"
+    echo "Please ensure .env contains S3_BUCKET"
+    exit 1
+fi
+
+# Check if we have valid credential configuration
+if [ -n "$AWS_PROFILE" ]; then
+    echo "✅ Using AWS Profile: $AWS_PROFILE"
+elif [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+    echo "✅ Using explicit AWS credentials"
+    if [ -n "$AWS_SESSION_TOKEN" ]; then
+        echo "   (with session token for temporary credentials)"
+    fi
+else
+    echo "❌ Missing AWS credentials configuration!"
+    echo "Please ensure .env contains either:"
+    echo "  Option 1: AWS_PROFILE=your-profile-name"
+    echo "  Option 2: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
+    echo "           (optionally with AWS_SESSION_TOKEN for temporary credentials)"
     exit 1
 fi
 
@@ -45,21 +59,51 @@ case $MODE in
         echo "🚀 Starting Nova Reel MCP Server (STDIO mode)..."
         echo "   This mode is for direct MCP client connections."
         echo ""
-        python main.py --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET"
+        # Build command with conditional parameters
+        CMD="python main.py --aws-region ${AWS_REGION:-us-east-1} --s3-bucket $S3_BUCKET"
+        if [ -n "$AWS_PROFILE" ]; then
+            CMD="$CMD --aws-profile $AWS_PROFILE"
+        elif [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+            CMD="$CMD --aws-access-key-id $AWS_ACCESS_KEY_ID --aws-secret-access-key $AWS_SECRET_ACCESS_KEY"
+            if [ -n "$AWS_SESSION_TOKEN" ]; then
+                CMD="$CMD --aws-session-token $AWS_SESSION_TOKEN"
+            fi
+        fi
+        eval $CMD
         ;;
     sse)
         echo "🚀 Starting Nova Reel MCP Server (SSE mode)..."
         echo "   This mode provides a web interface."
         echo "   Access: http://localhost:8000"
         echo ""
-        python -m novareel_mcp_server.server_sse --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET" --host 0.0.0.0 --port 8000
+        # Build command with conditional parameters
+        CMD="python -m novareel_mcp_server.server_sse --aws-region ${AWS_REGION:-us-east-1} --s3-bucket $S3_BUCKET --host 0.0.0.0 --port 8000"
+        if [ -n "$AWS_PROFILE" ]; then
+            CMD="$CMD --aws-profile $AWS_PROFILE"
+        elif [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+            CMD="$CMD --aws-access-key-id $AWS_ACCESS_KEY_ID --aws-secret-access-key $AWS_SECRET_ACCESS_KEY"
+            if [ -n "$AWS_SESSION_TOKEN" ]; then
+                CMD="$CMD --aws-session-token $AWS_SESSION_TOKEN"
+            fi
+        fi
+        eval $CMD
         ;;
     http)
         echo "🚀 Starting Nova Reel MCP Server (HTTP Streaming mode)..."
         echo "   This mode provides HTTP streaming transport."
         echo "   Access: http://localhost:8001"
         echo ""
-        python -m novareel_mcp_server.server_http --aws-access-key-id "$AWS_ACCESS_KEY_ID" --aws-secret-access-key "$AWS_SECRET_ACCESS_KEY" --aws-region "${AWS_REGION:-us-east-1}" --s3-bucket "$S3_BUCKET" --host 0.0.0.0 --port 8001
+        # Build command with conditional parameters
+        CMD="python -m novareel_mcp_server.server_http --aws-region ${AWS_REGION:-us-east-1} --s3-bucket $S3_BUCKET --host 0.0.0.0 --port 8001"
+        if [ -n "$AWS_PROFILE" ]; then
+            CMD="$CMD --aws-profile $AWS_PROFILE"
+        elif [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+            CMD="$CMD --aws-access-key-id $AWS_ACCESS_KEY_ID --aws-secret-access-key $AWS_SECRET_ACCESS_KEY"
+            if [ -n "$AWS_SESSION_TOKEN" ]; then
+                CMD="$CMD --aws-session-token $AWS_SESSION_TOKEN"
+            fi
+        fi
+        eval $CMD
         ;;
     docker-stdio)
         echo "🐳 Starting Nova Reel MCP Server (Docker STDIO)..."

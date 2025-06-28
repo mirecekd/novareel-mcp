@@ -25,6 +25,8 @@ mcp = FastMCP("Amazon Nova Reel 1.1 HTTP")
 # Global variables for AWS configuration
 aws_access_key_id: Optional[str] = None
 aws_secret_access_key: Optional[str] = None
+aws_session_token: Optional[str] = None
+aws_profile: Optional[str] = None
 aws_region: Optional[str] = None
 s3_bucket: Optional[str] = None
 bedrock_client = None
@@ -75,26 +77,47 @@ class VideoGenerationError(NovaReelError):
 
 
 def initialize_aws_client():
-    """Initialize AWS Bedrock client with provided credentials"""
+    """Initialize AWS Bedrock client with provided credentials or profile"""
     global bedrock_client
     
-    if not all([aws_access_key_id, aws_secret_access_key, aws_region, s3_bucket]):
-        raise AWSConfigError("Missing required AWS configuration. Please provide AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and S3_BUCKET")
+    if not s3_bucket:
+        raise AWSConfigError("Missing required S3_BUCKET configuration")
     
     try:
-        bedrock_client = boto3.client(
-            "bedrock-runtime",
-            region_name=aws_region,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key
-        )
+        # Option 1: Use AWS Profile
+        if aws_profile:
+            print(f"Using AWS profile: {aws_profile}", file=sys.stderr)
+            session = boto3.Session(profile_name=aws_profile, region_name=aws_region)
+            bedrock_client = session.client("bedrock-runtime")
+            
+        # Option 2: Use explicit credentials
+        elif aws_access_key_id and aws_secret_access_key:
+            print("Using explicit AWS credentials", file=sys.stderr)
+            client_kwargs = {
+                "service_name": "bedrock-runtime",
+                "region_name": aws_region,
+                "aws_access_key_id": aws_access_key_id,
+                "aws_secret_access_key": aws_secret_access_key
+            }
+            
+            # Add session token if provided (for temporary credentials)
+            if aws_session_token:
+                client_kwargs["aws_session_token"] = aws_session_token
+                print("Using temporary credentials with session token", file=sys.stderr)
+            
+            bedrock_client = boto3.client(**client_kwargs)
+            
+        # Option 3: Use default credential chain
+        else:
+            print("Using default AWS credential chain", file=sys.stderr)
+            bedrock_client = boto3.client("bedrock-runtime", region_name=aws_region)
         
         # Test the connection with a simple operation
         # Note: bedrock-runtime doesn't have list_foundation_models, that's in bedrock client
         # We'll just create the client and let the first actual call test the connection
         
     except NoCredentialsError:
-        raise AWSConfigError("Invalid AWS credentials provided")
+        raise AWSConfigError("No valid AWS credentials found. Please provide explicit credentials, set AWS_PROFILE, or configure default credentials.")
     except ClientError as e:
         raise AWSConfigError(f"AWS client error: {e}")
     except Exception as e:
@@ -395,6 +418,8 @@ def main():
     parser = argparse.ArgumentParser(description="Amazon Nova Reel 1.1 MCP Server - HTTP Streaming Version")
     parser.add_argument("--aws-access-key-id", help="AWS Access Key ID")
     parser.add_argument("--aws-secret-access-key", help="AWS Secret Access Key")
+    parser.add_argument("--aws-session-token", help="AWS Session Token (for temporary credentials)")
+    parser.add_argument("--aws-profile", help="AWS Profile name (alternative to explicit credentials)")
     parser.add_argument("--aws-region", default="us-east-1", help="AWS Region")
     parser.add_argument("--s3-bucket", help="S3 bucket name for video output")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
@@ -403,21 +428,37 @@ def main():
     args = parser.parse_args()
     
     # Set global configuration from args or environment variables
-    global aws_access_key_id, aws_secret_access_key, aws_region, s3_bucket
+    global aws_access_key_id, aws_secret_access_key, aws_session_token, aws_profile, aws_region, s3_bucket
     
     aws_access_key_id = args.aws_access_key_id or os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret_access_key = args.aws_secret_access_key or os.getenv("AWS_SECRET_ACCESS_KEY")
+    aws_session_token = args.aws_session_token or os.getenv("AWS_SESSION_TOKEN")
+    aws_profile = args.aws_profile or os.getenv("AWS_PROFILE")
     aws_region = args.aws_region or os.getenv("AWS_REGION", "us-east-1")
     s3_bucket = args.s3_bucket or os.getenv("S3_BUCKET")
     
-    if not all([aws_access_key_id, aws_secret_access_key, s3_bucket]):
-        print("Error: Missing required AWS configuration.", file=sys.stderr)
-        print("Please provide:", file=sys.stderr)
-        print("  --aws-access-key-id or AWS_ACCESS_KEY_ID env var", file=sys.stderr)
-        print("  --aws-secret-access-key or AWS_SECRET_ACCESS_KEY env var", file=sys.stderr)
-        print("  --s3-bucket or S3_BUCKET env var", file=sys.stderr)
-        print("  --aws-region or AWS_REGION env var (optional, defaults to us-east-1)", file=sys.stderr)
+    # Validate configuration - need either profile OR explicit credentials + S3 bucket
+    if not s3_bucket:
+        print("Error: Missing required S3_BUCKET configuration.", file=sys.stderr)
+        print("Please provide --s3-bucket or S3_BUCKET env var", file=sys.stderr)
         sys.exit(1)
+    
+    # Check if we have valid credential configuration
+    has_explicit_creds = aws_access_key_id and aws_secret_access_key
+    has_profile = aws_profile
+    
+    if not has_explicit_creds and not has_profile:
+        print("Error: Missing AWS credentials configuration.", file=sys.stderr)
+        print("Please provide either:", file=sys.stderr)
+        print("  Option 1: --aws-access-key-id and --aws-secret-access-key (with optional --aws-session-token)", file=sys.stderr)
+        print("  Option 2: --aws-profile", file=sys.stderr)
+        print("  Option 3: Set corresponding environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_PROFILE)", file=sys.stderr)
+        print("  Option 4: Configure default AWS credentials (e.g., via aws configure)", file=sys.stderr)
+        sys.exit(1)
+    
+    if has_explicit_creds and has_profile:
+        print("Warning: Both explicit credentials and AWS profile provided. Using explicit credentials.", file=sys.stderr)
+        aws_profile = None  # Clear profile to avoid confusion
     
     # Remove s3:// prefix if present
     if s3_bucket.startswith("s3://"):
