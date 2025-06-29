@@ -19,8 +19,14 @@ from botocore.exceptions import ClientError, NoCredentialsError
 from fastmcp import FastMCP
 from .prompting_guide import get_prompting_guidelines
 
-# Create MCP server with HTTP streaming transport
+# Create MCP server with HTTP transport
 mcp = FastMCP("Amazon Nova Reel 1.1 HTTP")
+
+# Add health endpoint
+@mcp.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "service": "Nova Reel MCP Server HTTP"}
 
 # Global variables for AWS configuration
 aws_access_key_id: Optional[str] = None

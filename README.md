@@ -250,7 +250,7 @@ python -m novareel_mcp_server.server_sse --aws-access-key-id YOUR_KEY --aws-secr
 docker run -p 8000:8000 -e AWS_ACCESS_KEY_ID=YOUR_KEY -e AWS_SECRET_ACCESS_KEY=YOUR_SECRET -e S3_BUCKET=YOUR_BUCKET mirecekd/novareel-mcp-server:sse
 ```
 
-Then access `http://localhost:8000` for the web interface.
+Then access `http://localhost:8000/sse/` for the SSE endpoint.
 
 ### HTTP Streaming Version (Bidirectional Transport)
 
