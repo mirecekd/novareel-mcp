@@ -22,12 +22,6 @@ from .prompting_guide import get_prompting_guidelines
 # Create MCP server with HTTP transport
 mcp = FastMCP("Amazon Nova Reel 1.1 HTTP")
 
-# Add health endpoint
-@mcp.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "Nova Reel MCP Server HTTP"}
-
 # Global variables for AWS configuration
 aws_access_key_id: Optional[str] = None
 aws_secret_access_key: Optional[str] = None
