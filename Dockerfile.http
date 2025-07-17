@@ -21,8 +21,8 @@ RUN chmod +x main_http.py
 EXPOSE 8001
 
 # Health check - check if HTTP server responds
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8001/ || exit 1
+#HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#    CMD curl -f http://localhost:8001/ || exit 1
 
 # Set default environment variables
 ENV AWS_REGION=us-east-1

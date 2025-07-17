@@ -31,8 +31,8 @@ ENV AWS_REGION=us-east-1
 EXPOSE 8000
 
 # Health check - check if SSE endpoint responds
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/sse/ || exit 1
+#HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+#    CMD curl -f http://localhost:8000/sse/ || exit 1
 
 # Entry point with parameter passing capability
 ENTRYPOINT ["python", "-m", "novareel_mcp_server.server_sse"]
