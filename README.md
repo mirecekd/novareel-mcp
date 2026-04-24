@@ -3,8 +3,8 @@
 A Model Context Protocol (MCP) server for Amazon Nova Reel 1.1 video generation using AWS Bedrock. This server provides tools for asynchronous video generation with comprehensive prompting guidelines and both stdio and SSE transport support.
 
 <div align="center">
-  
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/mirecekdg)
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/mirecekdg) [!["PayPal.me"](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?business=LJ5ZF7Q9KMTRW&no_recurring=0&currency_code=USD)
 
 </div>
 
